@@ -1,7 +1,11 @@
 import os
 import logging
+from datetime import datetime
+
 import sqlite3
 from sqlite3 import Error
+from turtle import up, update
+from venv import create
 
 logging.basicConfig(
     filename=os.path.abspath("database/db_logs.log"),
@@ -53,7 +57,7 @@ def create_connection(db_file):
         conn = sqlite3.connect(db_file)
         return conn
     except Error as e:
-        print(e)
+        logging.critical("Error {} al establecer conexión con la base de datos".format(e))
 
 
 # Creación de cada tabla en la base de datos
@@ -62,7 +66,7 @@ def create_table(conn, table):
         connection = conn.cursor()
         connection.execute(table)
     except Error as e:
-        print(e)
+        logging.critical("Error {} al crear tabla en la base de datos".format(e))
 
 
 # Creación de la base de datos
@@ -76,3 +80,82 @@ def database_exists():
     if not os.path.exists(db_file):
         create_db(TABLES)
         logging.info("Base de datos creada")
+
+def gold_price_actualization(price):
+    conn = create_connection(db_file)
+
+    db = conn.cursor()
+
+    actualization = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+    update = (actualization, price)
+
+    db.execute(
+        """
+            INSERT INTO gold_price(
+                actualization, price
+            )
+            VALUES (?, ?)
+        """, update
+    )
+
+    conn.commit()
+    logging.info("Precio del oro actualizado")
+
+def silver_price_actualization(price):
+    conn = create_connection(db_file)
+
+    db = conn.cursor()
+
+    actualization = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+    update = (actualization, price)
+
+    db.execute(
+        """
+            INSERT INTO silver_price(
+                actualization, price
+            )
+            VALUES (?, ?)            
+        """, update
+    )
+
+    conn.commit()
+    logging.info("Precio de la plata actualizado")
+
+
+def query_gold_price():
+    conn = create_connection(db_file)
+
+    db = conn.cursor()
+
+    db.execute(
+        """
+            SELECT *
+            FROM gold_price
+            ORDER BY id_gold
+            DESC LIMIT 1;
+        """
+    )
+
+    _,_,last_price = db.fetchall()[0]
+
+    return last_price
+
+def query_silver_price():
+    conn = create_connection(db_file)
+
+    db = conn.cursor()
+
+    db.execute(
+        """
+            SELECT *
+            FROM silver_price
+            ORDER BY id_silver
+            DESC LIMIT 1;
+        """
+    )
+
+    _,_,last_price = db.fetchall()[0]
+
+    return last_price

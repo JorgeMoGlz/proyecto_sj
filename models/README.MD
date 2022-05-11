@@ -1,0 +1,1 @@
+# Carpeta de configuración de las ventanas
