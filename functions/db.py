@@ -45,7 +45,7 @@ TABLES = [
     """,
 ]
 
-# Creación de la base de datos
+# Creación de la conexión con la base de datos
 def create_connection(db_file):
     conn = None
 
